@@ -1,0 +1,126 @@
+name: Manual Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      create_release:
+        description: 'Create a release'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build ${{ matrix.arch }} executable
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        include:
+          - arch: x86
+            python-arch: x86
+          - arch: x86_64
+            python-arch: x64
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python ${{ matrix.python-arch }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          architecture: ${{ matrix.python-arch }}
+      
+      - name: Display Python info
+        run: |
+          python --version
+          python -c "import platform; print(f'Architecture: {platform.machine()}')"
+          python -c "import struct; print(f'Bits: {struct.calcsize(\"P\") * 8}-bit')"
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+      
+      - name: Build executable with PyInstaller
+        run: |
+          pyinstaller ntpi_main.spec
+      
+      - name: Rename executable
+        run: |
+          Move-Item -Path "dist\ntpi_dumper.exe" -Destination "dist\ntpi_dumper_${{ matrix.arch }}.exe"
+      
+      - name: Calculate SHA256
+        id: sha256
+        run: |
+          $hash = (Get-FileHash -Path "dist\ntpi_dumper_${{ matrix.arch }}.exe" -Algorithm SHA256).Hash
+          echo "sha256=$hash" >> $env:GITHUB_OUTPUT
+          echo "::notice title=SHA256 for ${{ matrix.arch }}::$hash"
+          # Create checksum file
+          "$hash  ntpi_dumper_${{ matrix.arch }}.exe" | Out-File -FilePath "dist\ntpi_dumper_${{ matrix.arch }}.exe.sha256" -Encoding ascii
+          
+          # Display file info
+          $fileInfo = Get-Item "dist\ntpi_dumper_${{ matrix.arch }}.exe"
+          echo "::notice title=File size for ${{ matrix.arch }}::$($fileInfo.Length / 1MB) MB"
+      
+      - name: Test executable
+        run: |
+          & "dist\ntpi_dumper_${{ matrix.arch }}.exe" --version
+          & "dist\ntpi_dumper_${{ matrix.arch }}.exe" --help
+      
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ntpi_dumper_${{ matrix.arch }}
+          path: |
+            dist/ntpi_dumper_${{ matrix.arch }}.exe
+            dist/ntpi_dumper_${{ matrix.arch }}.exe.sha256
+          retention-days: 30
+  
+  summary:
+    name: Build Summary
+    needs: build
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      
+      - name: Generate summary
+        run: |
+          echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Built Files" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Architecture | File | Size | SHA256 |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------------|------|------|--------|" >> $GITHUB_STEP_SUMMARY
+          
+          for arch in x86 x86_64; do
+            exe_file="artifacts/ntpi_dumper_${arch}/ntpi_dumper_${arch}.exe"
+            sha_file="artifacts/ntpi_dumper_${arch}/ntpi_dumper_${arch}.exe.sha256"
+            
+            if [ -f "$exe_file" ]; then
+              size=$(ls -lh "$exe_file" | awk '{print $5}')
+              sha256=$(cat "$sha_file" | awk '{print $1}')
+              echo "| ${arch} | ntpi_dumper_${arch}.exe | ${size} | \`${sha256:0:16}...\` |" >> $GITHUB_STEP_SUMMARY
+            fi
+          done
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### SHA256 Checksums" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          cat artifacts/*/*.sha256 >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ All builds completed successfully!" >> $GITHUB_STEP_SUMMARY
