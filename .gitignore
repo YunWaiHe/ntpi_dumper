@@ -1,0 +1,74 @@
+# Python
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+*.pyo
+*.so
+.Python
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.env/
+.venv/
+virtualenv/
+
+# IDE and Editors
+.vscode/
+.idea/
+.eclipse/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# PyInstaller build output
+build/
+dist/
+*.spec.bak
+
+# NTPI firmware files (usually large binary files)
+*.ntpi
+*_extracted/
+*.mbn
+*.melf
+*.fv
+Patch.xml
+RawProgram.xml
+
+# Compiled executables
+*.exe
+*.dll
+ntpi_main.exe
+ntpi-dumper.exe
+
+# Go version build artifacts
+NTPI_DUMPER_GO/
+ntpi_dumper_go_version/*.exe
+ntpi_dumper_go_version/ntpi-dumper
+ntpi_dumper_go_version/dist/
+
+# XZ Utils binaries (keep source and docs per BSD-0 and GPL licenses)
+# Note: XZ Utils 5.5.2+ uses BSD Zero Clause License (0BSD)
+# Some components use LGPL/GPL - see xz_source/doc/COPYING*.txt
+ntpi_dumper_go_version/xz_source/bin_*/
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+.temp/
+temp/
+
+# OS specific
+Thumbs.db
+.DS_Store
+desktop.ini
+*.lnk
+
+# Test output
+test_output/
+output/

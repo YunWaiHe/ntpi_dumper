@@ -1,6 +1,7 @@
 # NTPI Dumper
 
 [![Build and Release](https://github.com/YunWaiHe/ntpi_dumper/actions/workflows/build-release.yml/badge.svg)](https://github.com/YunWaiHe/ntpi_dumper/actions/workflows/build-release.yml)
+[![Build Go CGO Version](https://github.com/YunWaiHe/ntpi_dumper/actions/workflows/build-go-cgo.yml/badge.svg)](https://github.com/YunWaiHe/ntpi_dumper/actions/workflows/build-go-cgo.yml)
 [![Latest Release](https://img.shields.io/github/v/release/YunWaiHe/ntpi_dumper)](https://github.com/YunWaiHe/ntpi_dumper/releases/latest)
 [![License](https://img.shields.io/github/license/YunWaiHe/ntpi_dumper)](LICENSE)
 
@@ -16,8 +17,15 @@ NTPI firmware extraction tool for Nothing Phone with multi-threaded optimization
 
 Get the latest release from [Releases](https://github.com/YunWaiHe/ntpi_dumper/releases/latest):
 
-- **ntpi_dumper_x86_64.exe** - For 64-bit Windows (Recommended)
-- **ntpi_dumper_x86.exe** - For 32-bit Windows (Compatible with both 32-bit and 64-bit)
+#### Python Version (Standalone)
+- **ntpi_dumper_x86_64.exe** - For 64-bit Windows
+- **ntpi_dumper_x86.exe** - For 32-bit Windows
+
+#### Go CGO Version (High Performance) ⚡
+- **ntpi-dumper-cgo-x86_64.exe** + **liblzma-x86_64.dll** - 64-bit, 10-20x faster
+- **ntpi-dumper-cgo-x86.exe** + **liblzma-x86.dll** - 32-bit, 10-20x faster
+
+> **Note:** Go CGO version requires the DLL file to be in the same directory as the executable.
 
 ### 2. Extract Firmware
 
@@ -118,6 +126,26 @@ This code/project comes with zero warranties and even fewer guarantees.
 We are not responsible for anything that happens, including—but definitely not limited to—your keyboard catching fire, your impending existential crisis, or the total implosion of the planet Earth.
 
 If you sue us, I will LMAO.
+
+## Third-Party Components
+
+### XZ Utils
+
+This project includes XZ Utils for LZMA2 decompression:
+
+- **Version:** 5.5.2+
+- **License:** BSD Zero Clause License (0BSD) for core components
+  - Some parts are under GNU LGPL v2.1, GPL v2, or GPL v3
+- **Source:** [XZ Utils Project](https://tukaani.org/xz/)
+- **Location:** `ntpi_dumper_go_version/xz_source/`
+- **Documentation:** See `xz_source/doc/COPYING*.txt` for detailed license information
+
+From version 5.5.2 onwards, the core components of XZ Utils are under the BSD Zero Clause License (0BSD). Earlier versions released as public domain remain in the public domain. Some parts (scripts from GNU gzip, build system files) are under different free software licenses.
+
+For complete license details, refer to:
+- `ntpi_dumper_go_version/xz_source/doc/COPYING.txt`
+- `ntpi_dumper_go_version/xz_source/doc/COPYING.0BSD.txt`
+- `ntpi_dumper_go_version/xz_source/doc/AUTHORS.txt`
 
 ## License
 
