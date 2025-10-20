@@ -18,13 +18,8 @@ permissions:
 
 jobs:
   build-go-cgo:
-    name: Build Go CGO ${{ matrix.arch }}
+    name: Build Go CGO x86_64
     runs-on: windows-latest
-    strategy:
-      matrix:
-        include:
-          - arch: x86_64
-          - arch: x86
     
     steps:
       - name: Checkout code
@@ -41,14 +36,8 @@ jobs:
         run: |
           Write-Host "Downloading WinLibs MinGW-w64..." -ForegroundColor Cyan
           
-          if ("${{ matrix.arch }}" -eq "x86_64") {
-            $mingwUrl = "https://github.com/brechtsanders/winlibs_mingw/releases/download/15.2.0posix-13.0.0-ucrt-r2/winlibs-x86_64-posix-seh-gcc-15.2.0-mingw-w64ucrt-13.0.0-r2.7z"
-            $mingwDir = "mingw64"
-          } else {
-            $mingwUrl = "https://github.com/brechtsanders/winlibs_mingw/releases/download/15.2.0posix-13.0.0-ucrt-r2/winlibs-i686-posix-dwarf-gcc-15.2.0-mingw-w64ucrt-13.0.0-r2.7z"
-            $mingwDir = "mingw32"
-          }
-          
+          $mingwUrl = "https://github.com/brechtsanders/winlibs_mingw/releases/download/15.2.0posix-13.0.0-ucrt-r2/winlibs-x86_64-posix-seh-gcc-15.2.0-mingw-w64ucrt-13.0.0-r2.7z"
+          $mingwDir = "mingw64"
           $mingwArchive = "mingw.7z"
           
           # Download MinGW
@@ -77,7 +66,7 @@ jobs:
           Set-Location ntpi_dumper_go_version
           
           # Verify xz_source files
-          $xzDir = "xz_source/bin_${{ matrix.arch == 'x86_64' && 'x86-64' || 'i686-sse2' }}"
+          $xzDir = "xz_source/bin_x86-64"
           if (-not (Test-Path "$xzDir/liblzma.dll")) {
             Write-Host "Error: liblzma.dll not found in $xzDir" -ForegroundColor Red
             exit 1
@@ -96,13 +85,13 @@ jobs:
       - name: Build Go CGO version
         shell: pwsh
         run: |
-          Write-Host "Building Go CGO version for ${{ matrix.arch }}..." -ForegroundColor Cyan
+          Write-Host "Building Go CGO version for x86_64..." -ForegroundColor Cyan
           
           Set-Location ntpi_dumper_go_version
           
           # Set up paths
           $xzInclude = (Resolve-Path "xz_source/include").Path.Replace('\', '/')
-          $xzBinDir = if ("${{ matrix.arch }}" -eq "x86_64") { "bin_x86-64" } else { "bin_i686-sse2" }
+          $xzBinDir = "bin_x86-64"
           $xzLib = (Resolve-Path "xz_source/$xzBinDir").Path.Replace('\', '/')
           
           # Configure CGO
@@ -125,7 +114,7 @@ jobs:
           Write-Host "  GCC Path: $gccPath" -ForegroundColor Gray
           
           # Build
-          $outputName = "ntpi-dumper-cgo-${{ matrix.arch }}.exe"
+          $outputName = "ntpi-dumper-cgo-x86_64.exe"
           go build -tags cgo -ldflags="-s -w" -o $outputName ./cmd/ntpi-dumper
           
           if ($LASTEXITCODE -ne 0) {
@@ -137,7 +126,7 @@ jobs:
           
           # Copy DLL
           $dllSource = "xz_source/$xzBinDir/liblzma.dll"
-          $dllDest = "liblzma-${{ matrix.arch }}.dll"
+          $dllDest = "liblzma-x86_64.dll"
           Copy-Item $dllSource -Destination $dllDest -Force
           Write-Host "✓ DLL copied" -ForegroundColor Green
           
@@ -154,8 +143,8 @@ jobs:
         run: |
           Set-Location ntpi_dumper_go_version
           
-          $exeName = "ntpi-dumper-cgo-${{ matrix.arch }}.exe"
-          $dllName = "liblzma-${{ matrix.arch }}.dll"
+          $exeName = "ntpi-dumper-cgo-x86_64.exe"
+          $dllName = "liblzma-x86_64.dll"
           
           # Rename DLL for testing
           Copy-Item $dllName -Destination "liblzma.dll" -Force
@@ -188,8 +177,8 @@ jobs:
         run: |
           Set-Location ntpi_dumper_go_version
           
-          $exeName = "ntpi-dumper-cgo-${{ matrix.arch }}.exe"
-          $dllName = "liblzma-${{ matrix.arch }}.dll"
+          $exeName = "ntpi-dumper-cgo-x86_64.exe"
+          $dllName = "liblzma-x86_64.dll"
           
           # Hash executable
           $exeHash = (Get-FileHash -Path $exeName -Algorithm SHA256).Hash
@@ -208,12 +197,12 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ntpi-dumper-cgo-${{ matrix.arch }}
+          name: ntpi-dumper-cgo-x86_64
           path: |
-            ntpi_dumper_go_version/ntpi-dumper-cgo-${{ matrix.arch }}.exe
-            ntpi_dumper_go_version/liblzma-${{ matrix.arch }}.dll
-            ntpi_dumper_go_version/ntpi-dumper-cgo-${{ matrix.arch }}.exe.sha256
-            ntpi_dumper_go_version/liblzma-${{ matrix.arch }}.dll.sha256
+            ntpi_dumper_go_version/ntpi-dumper-cgo-x86_64.exe
+            ntpi_dumper_go_version/liblzma-x86_64.dll
+            ntpi_dumper_go_version/ntpi-dumper-cgo-x86_64.exe.sha256
+            ntpi_dumper_go_version/liblzma-x86_64.dll.sha256
           retention-days: 90
 
   create-release:
@@ -240,9 +229,6 @@ jobs:
             artifacts/ntpi-dumper-cgo-x86_64/*.exe
             artifacts/ntpi-dumper-cgo-x86_64/*.dll
             artifacts/ntpi-dumper-cgo-x86_64/*.sha256
-            artifacts/ntpi-dumper-cgo-x86/*.exe
-            artifacts/ntpi-dumper-cgo-x86/*.dll
-            artifacts/ntpi-dumper-cgo-x86/*.sha256
           body: |
             ## NTPI Dumper Go (CGO Version) - High Performance
             
@@ -251,17 +237,13 @@ jobs:
             
             ### 📦 Downloads
             
-            #### Windows x64 (Recommended)
+            #### Windows x64
             - **ntpi-dumper-cgo-x86_64.exe** - Main executable
             - **liblzma-x86_64.dll** - Required LZMA library (keep in same folder)
             
-            #### Windows x86 (32-bit)
-            - **ntpi-dumper-cgo-x86.exe** - Main executable
-            - **liblzma-x86.dll** - Required LZMA library (keep in same folder)
-            
             ### 📋 Usage
             
-            1. Download both the `.exe` and corresponding `.dll` file
+            1. Download both the `.exe` and `.dll` file
             2. Keep them in the same directory
             3. Run: `ntpi-dumper-cgo-x86_64.exe <file.ntpi>`
             
@@ -274,7 +256,7 @@ jobs:
             
             ### 🔧 Requirements
             
-            - Windows 7 or later
+            - Windows 7 or later (64-bit)
             - Both .exe and .dll files must be in the same directory
             
             ### ⚡ Performance
@@ -285,6 +267,6 @@ jobs:
             
             ---
             
-            **Note:** This is the CGO version. For a standalone version without DLL dependencies, check the Python or pure Go releases.
+            **Note:** This is the CGO version. For a standalone version without DLL dependencies, check the Python releases.
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

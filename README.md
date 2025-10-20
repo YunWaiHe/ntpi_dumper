@@ -23,7 +23,6 @@ Get the latest release from [Releases](https://github.com/YunWaiHe/ntpi_dumper/r
 
 #### Go CGO Version (High Performance) ⚡
 - **ntpi-dumper-cgo-x86_64.exe** + **liblzma-x86_64.dll** - 64-bit, 10-20x faster
-- **ntpi-dumper-cgo-x86.exe** + **liblzma-x86.dll** - 32-bit, 10-20x faster
 
 > **Note:** Go CGO version requires the DLL file to be in the same directory as the executable.
 
