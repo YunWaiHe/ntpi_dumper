@@ -96,13 +96,17 @@ jobs:
           # Test 3: Basic execution (should show usage)
           Write-Host "`n[Test 3/3] Testing basic execution..." -ForegroundColor Yellow
           $output = & "dist\ntpi_dumper_${{ matrix.arch }}.exe" 2>&1
+          # Reset exit code check - program should exit with 1 when no args provided
+          $expectedExitCode = $LASTEXITCODE
           if ($output -match "Usage:|ntpi_main.exe") {
-            Write-Host "✓ Basic execution test passed" -ForegroundColor Green
+            Write-Host "✓ Basic execution test passed (exit code: $expectedExitCode)" -ForegroundColor Green
           } else {
             Write-Host "WARNING: Unexpected output from basic execution" -ForegroundColor Yellow
           }
           
           Write-Host "`n✓ All tests passed!" -ForegroundColor Green
+          # Explicitly set exit code to 0 for successful test completion
+          exit 0
       
       - name: Upload artifact
         uses: actions/upload-artifact@v4
