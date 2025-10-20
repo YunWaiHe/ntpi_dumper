@@ -24,23 +24,43 @@ if (-not (Get-Command gcc -ErrorAction SilentlyContinue)) {
 Write-Host "✓ GCC found: $(gcc --version | Select-Object -First 1)" -ForegroundColor Green
 Write-Host ""
 
-# Set up xz_source paths
-$xzSourceDir = Join-Path $PSScriptRoot "xz_source"
-$xzIncludeDir = Join-Path $xzSourceDir "include"
-$xzBinDir = Join-Path $xzSourceDir "bin_x86-64"
+# Download XZ Utils if not present
+$xzUtilsDir = Join-Path $PSScriptRoot "..\xz_utils"
+$xzIncludeDir = Join-Path $xzUtilsDir "include"
+$xzBinDir = Join-Path $xzUtilsDir "bin_x86-64"
 $xzDllPath = Join-Path $xzBinDir "liblzma.dll"
 
-# Verify xz_source files
-Write-Host "[2/5] Checking xz_source directory..." -ForegroundColor Yellow
-if (-not (Test-Path $xzIncludeDir)) {
-    Write-Host "✗ xz_source/include directory not found!" -ForegroundColor Red
-    exit 1
-}
+Write-Host "[2/5] Checking XZ Utils..." -ForegroundColor Yellow
 if (-not (Test-Path $xzDllPath)) {
-    Write-Host "✗ xz_source/bin_x86-64/liblzma.dll not found!" -ForegroundColor Red
-    exit 1
+    Write-Host "Downloading XZ Utils 5.8.1..." -ForegroundColor Yellow
+    $xzUrl = "https://github.com/tukaani-project/xz/releases/download/v5.8.1/xz-5.8.1-windows.7z"
+    $xzArchive = Join-Path $env:TEMP "xz-windows.7z"
+    
+    # Download
+    Invoke-WebRequest -Uri $xzUrl -OutFile $xzArchive -UseBasicParsing
+    
+    # Extract
+    if (Test-Path $xzUtilsDir) {
+        Remove-Item $xzUtilsDir -Recurse -Force
+    }
+    New-Item -ItemType Directory -Path $xzUtilsDir -Force | Out-Null
+    
+    # Use 7-Zip if available, otherwise use Expand-Archive
+    if (Get-Command "7z" -ErrorAction SilentlyContinue) {
+        & 7z x $xzArchive -o"$xzUtilsDir" -y | Out-Null
+    } elseif (Test-Path "C:\Program Files\7-Zip\7z.exe") {
+        & "C:\Program Files\7-Zip\7z.exe" x $xzArchive -o"$xzUtilsDir" -y | Out-Null
+    } else {
+        Write-Host "✗ 7-Zip not found! Please install 7-Zip to extract XZ Utils." -ForegroundColor Red
+        Write-Host "  Download from: https://www.7-zip.org/" -ForegroundColor Yellow
+        exit 1
+    }
+    
+    Remove-Item $xzArchive -Force
+    Write-Host "✓ XZ Utils downloaded and extracted" -ForegroundColor Green
+} else {
+    Write-Host "✓ XZ Utils already present" -ForegroundColor Green
 }
-Write-Host "✓ xz_source files found" -ForegroundColor Green
 Write-Host "  - Include: $xzIncludeDir" -ForegroundColor Gray
 Write-Host "  - Library: $xzDllPath" -ForegroundColor Gray
 Write-Host ""

@@ -130,21 +130,16 @@ If you sue us, I will LMAO.
 
 ### XZ Utils
 
-This project includes XZ Utils for LZMA2 decompression:
+The Go CGO build uses XZ Utils for high-performance LZMA2 decompression:
 
-- **Version:** 5.5.2+
+- **Version:** 5.8.1
 - **License:** BSD Zero Clause License (0BSD) for core components
   - Some parts are under GNU LGPL v2.1, GPL v2, or GPL v3
-- **Source:** [XZ Utils Project](https://tukaani.org/xz/)
-- **Location:** `ntpi_dumper_go_version/xz_source/`
-- **Documentation:** See `xz_source/doc/COPYING*.txt` for detailed license information
+- **Source:** [XZ Utils Project](https://github.com/tukaani-project/xz)
+- **Download:** Automatically downloaded during CI build from official releases
+- **Documentation:** [XZ Utils Documentation](https://tukaani.org/xz/)
 
-From version 5.5.2 onwards, the core components of XZ Utils are under the BSD Zero Clause License (0BSD). Earlier versions released as public domain remain in the public domain. Some parts (scripts from GNU gzip, build system files) are under different free software licenses.
-
-For complete license details, refer to:
-- `ntpi_dumper_go_version/xz_source/doc/COPYING.txt`
-- `ntpi_dumper_go_version/xz_source/doc/COPYING.0BSD.txt`
-- `ntpi_dumper_go_version/xz_source/doc/AUTHORS.txt`
+XZ Utils is downloaded automatically during the build process and is not included in the repository.
 
 ### WinLibs MinGW-w64
 
@@ -157,9 +152,6 @@ The Go CGO build uses WinLibs MinGW-w64 compiler:
 - **Used in:** GitHub Actions CI/CD pipeline for building CGO version
 
 WinLibs provides standalone builds of GCC and MinGW-w64 for Windows, offering better performance and easier setup compared to MSYS2 for automated builds.
-- `ntpi_dumper_go_version/xz_source/doc/COPYING.txt`
-- `ntpi_dumper_go_version/xz_source/doc/COPYING.0BSD.txt`
-- `ntpi_dumper_go_version/xz_source/doc/AUTHORS.txt`
 
 ## License
 

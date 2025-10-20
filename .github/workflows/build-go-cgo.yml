@@ -55,6 +55,33 @@ jobs:
           & "$mingwBinPath\gcc.exe" --version
           Write-Host "✓ MinGW-w64 setup complete" -ForegroundColor Green
       
+      - name: Download and Setup XZ Utils
+        shell: pwsh
+        run: |
+          Write-Host "Downloading XZ Utils..." -ForegroundColor Cyan
+          
+          $xzUrl = "https://github.com/tukaani-project/xz/releases/download/v5.8.1/xz-5.8.1-windows.7z"
+          $xzArchive = "xz-windows.7z"
+          
+          # Download XZ Utils
+          Write-Host "Downloading from: $xzUrl" -ForegroundColor Yellow
+          Invoke-WebRequest -Uri $xzUrl -OutFile $xzArchive -UseBasicParsing
+          
+          # Extract using 7-Zip
+          Write-Host "Extracting XZ Utils..." -ForegroundColor Yellow
+          New-Item -ItemType Directory -Path "xz_utils" -Force | Out-Null
+          & "C:\Program Files\7-Zip\7z.exe" x $xzArchive -o"xz_utils" -y
+          
+          # Verify extraction
+          $xzBinDir = "xz_utils\bin_x86-64"
+          if (-not (Test-Path "$xzBinDir\liblzma.dll")) {
+            Write-Host "Error: liblzma.dll not found after extraction" -ForegroundColor Red
+            exit 1
+          }
+          
+          Write-Host "✓ XZ Utils setup complete" -ForegroundColor Green
+          Write-Host "  Location: $xzBinDir" -ForegroundColor Gray
+      
       - name: Set up build environment
         shell: pwsh
         run: |
@@ -62,14 +89,6 @@ jobs:
           
           # Navigate to Go project directory
           Set-Location ntpi_dumper_go_version
-          
-          # Verify xz_source files
-          $xzDir = "xz_source/bin_x86-64"
-          if (-not (Test-Path "$xzDir/liblzma.dll")) {
-            Write-Host "Error: liblzma.dll not found in $xzDir" -ForegroundColor Red
-            exit 1
-          }
-          Write-Host "✓ xz_source files verified" -ForegroundColor Green
           
           # Download Go dependencies
           Write-Host "Downloading Go dependencies..." -ForegroundColor Yellow
@@ -87,10 +106,14 @@ jobs:
           
           Set-Location ntpi_dumper_go_version
           
-          # Set up paths
-          $xzInclude = (Resolve-Path "xz_source/include").Path.Replace('\', '/')
-          $xzBinDir = "bin_x86-64"
-          $xzLib = (Resolve-Path "xz_source/$xzBinDir").Path.Replace('\', '/')
+          # Set up paths to downloaded XZ Utils
+          $xzInclude = (Resolve-Path "..\xz_utils\include").Path.Replace('\', '/')
+          $xzLib = (Resolve-Path "..\xz_utils\bin_x86-64").Path.Replace('\', '/')
+          
+          # Configure CGO
+          $env:CGO_ENABLED = "1"
+          $env:CGO_CFLAGS = "-I$xzInclude"
+          $env:CGO_LDFLAGS = "-L$xzLib -llzma"
           
           # Configure CGO
           $env:CGO_ENABLED = "1"
@@ -122,8 +145,8 @@ jobs:
           
           Write-Host "✓ Build successful!" -ForegroundColor Green
           
-          # Copy DLL
-          $dllSource = "xz_source/$xzBinDir/liblzma.dll"
+          # Copy DLL from downloaded XZ Utils
+          $dllSource = "..\xz_utils\bin_x86-64\liblzma.dll"
           $dllDest = "liblzma-x86_64.dll"
           Copy-Item $dllSource -Destination $dllDest -Force
           Write-Host "✓ DLL copied" -ForegroundColor Green

@@ -48,14 +48,12 @@ ntpi-dumper.exe
 # Go version build artifacts
 NTPI_DUMPER_GO/
 ntpi_dumper_go_version/*.exe
+ntpi_dumper_go_version/*.dll
 ntpi_dumper_go_version/ntpi-dumper
 ntpi_dumper_go_version/dist/
 
-# XZ Utils binaries (keep DLL and headers for CGO builds)
-# Note: XZ Utils 5.5.2+ uses BSD Zero Clause License (0BSD)
-# Some components use LGPL/GPL - see xz_source/doc/COPYING*.txt
-ntpi_dumper_go_version/xz_source/bin_*/*.exe
-ntpi_dumper_go_version/xz_source/bin_*/*.a
+# Downloaded dependencies
+xz_utils/
 
 # Logs and temporary files
 *.log
