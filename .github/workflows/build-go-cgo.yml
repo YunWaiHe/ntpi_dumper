@@ -5,12 +5,10 @@ on:
     tags:
       - 'v*.*.*'  # Trigger on version tags like v0.1.0
     branches:
-      - main      # Also trigger on main branch pushes
-      - dev       # Also trigger on dev branch pushes (for testing)
+      - main      # Trigger on main branch pushes
   pull_request:
     branches:
       - main
-      - dev
   workflow_dispatch:  # Allow manual trigger
 
 permissions:
