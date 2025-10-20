@@ -147,6 +147,21 @@ For complete license details, refer to:
 - `ntpi_dumper_go_version/xz_source/doc/COPYING.0BSD.txt`
 - `ntpi_dumper_go_version/xz_source/doc/AUTHORS.txt`
 
+### WinLibs MinGW-w64
+
+The Go CGO build uses WinLibs MinGW-w64 compiler:
+
+- **Version:** GCC 15.2.0 + MinGW-w64 13.0.0 UCRT
+- **License:** Various open source licenses (GPL, LGPL, etc.)
+- **Website:** [https://winlibs.com/](https://winlibs.com/)
+- **GitHub:** [brechtsanders/winlibs_mingw](https://github.com/brechtsanders/winlibs_mingw)
+- **Used in:** GitHub Actions CI/CD pipeline for building CGO version
+
+WinLibs provides standalone builds of GCC and MinGW-w64 for Windows, offering better performance and easier setup compared to MSYS2 for automated builds.
+- `ntpi_dumper_go_version/xz_source/doc/COPYING.txt`
+- `ntpi_dumper_go_version/xz_source/doc/COPYING.0BSD.txt`
+- `ntpi_dumper_go_version/xz_source/doc/AUTHORS.txt`
+
 ## License
 
 See [LICENSE](LICENSE) for details.
