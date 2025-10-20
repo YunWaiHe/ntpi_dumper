@@ -2,6 +2,7 @@
 """
 PyInstaller spec file for NTPI Firmware Extraction Tool
 Optimized for Windows distribution with multiprocessing support
+Fixed for DLL loading issues
 """
 
 block_cipher = None
@@ -11,6 +12,10 @@ import sys
 import os
 sys.path.insert(0, os.path.abspath('.'))
 from version import __version__, VERSION_TUPLE, __product_name__, __description__, __author__, __copyright__
+
+# Multiprocessing support for Windows
+import multiprocessing
+multiprocessing.freeze_support()
 
 a = Analysis(
     ['ntpi_main.py'],
@@ -53,20 +58,8 @@ a = Analysis(
     hooksconfig={},
     runtime_hooks=[],
     excludes=[
+        # Only exclude GUI and heavy scientific libraries that are definitely not used
         'tkinter',
-        'test',
-        'unittest',
-        'pydoc',
-        'doctest',
-        'setuptools',
-        'pip',
-        'wheel',
-        'distutils',
-        'email',
-        'http',
-        'urllib',
-        'xmlrpc',
-        'concurrent.futures',
         'IPython',
         'jupyter',
         'notebook',
@@ -74,6 +67,11 @@ a = Analysis(
         'numpy',
         'pandas',
         'scipy',
+        'PIL',
+        'pygame',
+        'wx',
+        'PyQt5',
+        'PyQt6',
     ],
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
@@ -99,8 +97,8 @@ exe = EXE(
     name='ntpi_dumper',
     debug=False,
     bootloader_ignore_signals=False,
-    strip=True,
-    upx=True,
+    strip=False,  # Disable stripping to prevent DLL corruption
+    upx=False,    # Disable UPX compression to fix DLL loading issues
     upx_exclude=[],
     runtime_tmpdir=None,
     console=True,

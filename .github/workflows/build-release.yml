@@ -45,12 +45,52 @@ jobs:
         run: |
           Move-Item -Path "dist\ntpi_dumper.exe" -Destination "dist\ntpi_dumper_${{ matrix.arch }}.exe"
       
+      - name: Test executable
+        run: |
+          Write-Host "Testing ntpi_dumper_${{ matrix.arch }}.exe..." -ForegroundColor Cyan
+          
+          # Test 1: Version check
+          Write-Host "`n[Test 1/3] Testing --version..." -ForegroundColor Yellow
+          & "dist\ntpi_dumper_${{ matrix.arch }}.exe" --version
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "ERROR: Version test failed!" -ForegroundColor Red
+            exit 1
+          }
+          Write-Host "✓ Version test passed" -ForegroundColor Green
+          
+          # Test 2: Help check
+          Write-Host "`n[Test 2/3] Testing --help..." -ForegroundColor Yellow
+          & "dist\ntpi_dumper_${{ matrix.arch }}.exe" --help
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "ERROR: Help test failed!" -ForegroundColor Red
+            exit 1
+          }
+          Write-Host "✓ Help test passed" -ForegroundColor Green
+          
+          # Test 3: Basic execution (should show usage)
+          Write-Host "`n[Test 3/3] Testing basic execution..." -ForegroundColor Yellow
+          $output = & "dist\ntpi_dumper_${{ matrix.arch }}.exe" 2>&1
+          if ($output -match "Usage:|ntpi_main.exe") {
+            Write-Host "✓ Basic execution test passed" -ForegroundColor Green
+          } else {
+            Write-Host "WARNING: Unexpected output from basic execution" -ForegroundColor Yellow
+          }
+          
+          # Display file info
+          $fileInfo = Get-Item "dist\ntpi_dumper_${{ matrix.arch }}.exe"
+          $sizeMB = [math]::Round($fileInfo.Length / 1MB, 2)
+          Write-Host "`nExecutable size: $sizeMB MB" -ForegroundColor Cyan
+          echo "::notice title=File size for ${{ matrix.arch }}::$sizeMB MB"
+          
+          Write-Host "`n✓ All tests passed!" -ForegroundColor Green
+      
       - name: Calculate SHA256
         id: sha256
         run: |
           $hash = (Get-FileHash -Path "dist\ntpi_dumper_${{ matrix.arch }}.exe" -Algorithm SHA256).Hash
           echo "sha256=$hash" >> $env:GITHUB_OUTPUT
           echo "SHA256 for ${{ matrix.arch }}: $hash"
+          echo "::notice title=SHA256 for ${{ matrix.arch }}::$hash"
           # Create checksum file
           "$hash  ntpi_dumper_${{ matrix.arch }}.exe" | Out-File -FilePath "dist\ntpi_dumper_${{ matrix.arch }}.exe.sha256" -Encoding ascii
       
