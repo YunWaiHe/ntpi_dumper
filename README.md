@@ -153,6 +153,10 @@ The Go CGO build uses WinLibs MinGW-w64 compiler:
 
 WinLibs provides standalone builds of GCC and MinGW-w64 for Windows, offering better performance and easier setup compared to MSYS2 for automated builds.
 
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=YunWaiHe/ntpi_dumper&type=Date)](https://star-history.com/#YunWaiHe/ntpi_dumper&Date)
+
 ## License
 
 See [LICENSE](LICENSE) for details.
